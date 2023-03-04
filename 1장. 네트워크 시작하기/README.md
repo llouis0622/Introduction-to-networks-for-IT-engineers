@@ -15,7 +15,6 @@
 - 기존의 3계층 구조 → 2계층 구조로 변화(가상화 기술과 높은 대역폭 요구하는 스케일 아웃 기반의 서비스 등장)
 - 스파인-리프 구조 : 일반 서버(10G Base-T, Top of Rack 스위치와 연결) ↔ 리프 스위치(TOR 스위치) - 스파인 스위치(40G, 100G)
 
-
 # 2. 프로토콜
 
 - 이더넷 - TCP/IP 기반 프로토콜로 변경
@@ -36,7 +35,6 @@ Connection: Keep-Alive
 ```
 
 - TCP/IP 프로토콜 스택 : 애플리케이션 계층, 트랜스포트 계층, 네트워크 계층, 데이터링크 계층, 피지컬 계층
-
 
 # 3. OSI 7계층과 TCP/IP
 
@@ -76,7 +74,6 @@ Connection: Keep-Alive
 - 트랜스포트 계층 : OSI 모델의 트랜스포트 계층
 - 인터넷 : OSI 모델의 네트워크 계층
 - 네트워크 액세스 : OSI 모델의 데이터 링크 계층, 피지컬 계층
-
 
 # 4. OSI 7계층별 이해하기
 
@@ -148,5 +145,67 @@ Connection: Keep-Alive
 | 데이터 링크 계층 | IEEE 802.2, FDDI | 스위치, 브릿지, 네트워크 카드 |
 | 피지컬 계층 | RS-232, RS-449, V.35, S 등의 케이블 | 케이블, 허브, 탭(TAP) |
 
-
 # 5. 인캡슐레이션과 디캡슐레이션
+
+## 1. 인캡슐레이션(Encapsulation)
+
+- 상위 계층에서 하위 계층으로 데이터를 보내는 과정
+- 패킷에 데이터를 넣을 수 있도록 분할
+- 헤더에 반드시 포함되어야 하는 정보 : 현재 계층에서 정의하는 정보, 상위 프로토콜 지시자
+    - 상위 프로토콜 지시자 : 프로토콜 번호(3계층)
+        
+        
+        | 프로토콜 번호 | 프로토콜 |
+        | --- | --- |
+        | 1 | ICMP(Internet Control Message) |
+        | 2 | IGMP(Internet Group Management) |
+        | 6 | TCP(Transmission Control) |
+        | 17 | UDP(User Datagram) |
+        | 50 | ESP(Encap Security Payload) |
+        | 51 | AH(Authentication Header) |
+        | 58 | IPv6용 ICMP |
+        | 133 | FC(Fibre Channel) |
+    - 상위 프로토콜 지시자 : 포트 번호(4계층)
+        
+        
+        | 포트 번호 | 서비스 |
+        | --- | --- |
+        | TCP 20, 21 | FTP(File Transfer Protocol) |
+        | TCP 22 | SSH(Secure Shell) |
+        | TCP 23 | TELNET(Telnet Terminal) |
+        | TCP 25 | SMTP(Simple Mail Transport Protocol) |
+        | TCP 49 | TACACS |
+        | TCP 53 / UDP 53 | DNS(Domain Name Service) |
+        | UDP 67, 68 | BOOTP(Bootstrap Protocol) |
+        | TCP 80 / UDP 80 | HTTP(HyperText Transfer Protocol) |
+        | UDP 123 | NTP(Network Time Protocol) |
+        | UDP 161, 162 | SNMP(Simple Network Management Protocol) |
+        | TCP 443 | HTTPS |
+        | TCP 445 / UDP 445 | Microsoft-DS |
+    - 상위 프로토콜 지시자 : 이더 타입(2계층)
+        
+        
+        | 이더 타입(Ether Type) | 프로토콜 |
+        | --- | --- |
+        | 0x0800 | IPv4(Internet Protocol version 4) |
+        | 0x0806 | ARP(Address Resolution Protocol) |
+        | 0x22F3 | IETF TRILL Protocol) |
+        | 0x8035 | RARP(Reverse ARP) |
+        | 0x8100 | VLAN-tagged frame(802.1Q) |
+        | Shortest Path Bridding(802.1aq) | AH(Authentication Header) |
+        | 0x86DD | IPv6(Internet Protocol version 6) |
+        | 0x88CC | LLDP(Link Layer Discovery Protocol) |
+        | 0x8906 | FCoE(Fibre Channel over Ethernet) |
+        | 0x8915 | RoCE(RDMA over Converged Ethernet) |
+    
+
+## 2. 디캡슐레이션(Decapsulation)
+
+- 하위 계층에서 상위 계층의 데이터를 받는 과정
+- 받은 전기 신호를 데이터 형태로 만들어 위 계층으로 올림
+
+## 💭. MSS & MTU(데이터 크기 조절)
+
+- MSS(Maximum Segment Size) : 네트워크에서 수용할 수 있는 크기를 역산정해 데이터가 4계층으로 내려올 때 적절한 크기로 쪼개질 수 있도록 유도
+- MTU(Maximum Transmission Unit) : 네트워크에서 한 번에 보낼 수 있는 데이터 크기(1500 Byte)
+- IP 헤더(20 바이트), TCP 헤더(20 바이트), MSS (1460 바이트)
