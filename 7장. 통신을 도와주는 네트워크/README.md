@@ -270,3 +270,67 @@
 - 지역적으로 가까운 서비스에 접속해 더 빠른 서비스 제공이 가능하도록 분산
 - 서비스 응답 시간/지연(RTT/Latency) : 서비스 요청에 대한 응답이 얼마나 빠른지 또는 지연이 얼마나 없는지를 확인하고 이것을 이용해 서비스 분산 처리
 - IP에 대한 지리(Geography) 정보 : 서비스 제공이 가능한 각 사이트의 IP 주소에 대한 Geo 값을 확인해 가까운 사이트로 서비스 분산 처리
+
+# 4. DHCP(Dynamic Host Configuration Protocol)
+
+- IP를 동적으로 할당하는 데 사용되는 프로토콜
+    - 정적 할당 : 수동으로 IP와 네트워크 정보를 직접 설정하는 것
+    - 동적 할당 : 자동으로 설정
+- IP 주소, 서브넷 마스크, 게이트웨이, DNS 정보를 자동으로 할당받아 사용
+
+## 1. DHCP 프로토콜
+
+- BOOTP(Bootstrap Protocol) 프로토콜 기반
+- BOOTP + BOOTP에서 지원되지 않는 몇 가지 기능 추가
+- 클라이언트 서비스 포트 : 68(bootpc)
+- 서버 서비스 포트 : 67(bootps)
+
+## 2. DHCP 동작 방식
+
+1. DHCP Discover
+    - DHCP 클라이언트는 DHCP 서버를 찾기 위해 DHCP Discover 메시지를 브로드캐스트로 전송
+2. DHCP Offer
+    - DHCP Discover를 수신한 DHCP 서버는 클라이언트에 할당할 IP 주소와 서브넷, 게이트웨이, DNS 정보, Lease Time 등의 정보를 포함한 DHCP 메시지를 클라이언트로 전송
+3. DHCP Request
+    - DHCP 서버로부터 제안받은 IP 주소(Requested IP)와 DHCP 서버 정보(DHCP Server Identifier)를 포함한 DHCP 요청 메시지를 브로드캐스트로 전송
+4. DHCP Acknowledgement
+    - DHCP 클라이언트로부터 IP 주소를 사용하겠다는 요청을 받으면 DHCP 서버에 해당 IP를 어떤 클라이언트가 언제부터 사용하기 시작했는지 정보 기록, DHCP Request 메시지를 정상적으로 수행했다는 응답 전송
+- DHCP 메시지 타입
+    - DHCP Discover : 클라이언트가 사용한 DHCP 서버를 찾는 메시지
+    - DHCP Offer : DHCP 서버가 IP 설정값에 대해 클라이언트에게 제안하는 메시지
+    - DHCP Request : DHCP 서버에서 제안받은 설정값을 요청하는 메시지
+    - DHCP Decline : 현재 IP가 사용 중임을 클라이언트가 서버에 알려주는 메시지
+    - DHCP Ack : DHCP 서버가 클라이언트에 받은 요청을 수락하는 메시지
+    - DHCP Nak : DHCP 서버가 클라이언트에 받은 요청을 수락하지 않는다는 메시지
+    - DHCP Release : 클라이언트가 현재 IP를 반납할 때 사용하는 메시지
+    - DHCP Inform : 클라이언트가 서버에 IP 설정값을 요청하는 메시지
+- DHCP Starvation 공격 : DHCP 서버에서 가용한 모든 IP를 가짜로 할당받아 실제 클라이언트가 IP 주소를 할당받지 못하게 하는 공격 방식
+
+## 3. DHCP 서버 구성
+
+- IP 주소 풀(IP 범위) : 클라이언트에 할당할 IP 주소 범위
+- 예외 IP 주소 풀(예외 IP 범위) : 클라이언트에 할당할 IP 주소로 선언된 범위 중 예외적으로 할당하지 않을 대역
+- 임대 시간 : 클라이언트에 할당할 IP 주소의 기본 임대 시간
+- 서브넷 마스크 : 클라이언트에 할당할 IP 주소에 대한 서브넷 마스크 정보
+- 게이트웨이 : 클라이언트에 할당할 게이트웨이 정보
+- DNS : 클라이언트에 할당할 DNS 정보
+
+## 4. DHCP 릴레이
+
+- DHCP 서버 한 대로 여러 네트워크 대역에서 IP 풀 관리 가능
+1. DHCP Discover(클라이언트 → 릴레이 에이전트)
+    - DHCP 클라이언트는 DHCP 서버를 찾기 위해 브로드캐스트로 패킷 전송
+2. DHCP Discover(릴레이 에이전트 → DHCP 서버)
+    - DHCP 릴레이 에이전트는 클라이언트가 보낸 DHCP Discover 메시지를 다른 네트워크에 있는 DHCP 서버로 전달하기 위해 출발지와 목적지를 릴레이 에이전트 IP 주소와 DHCP 서버 IP 주소로 재작성
+3. DHCP Offer(DHCP 서버 → 릴레이 에이전트)
+    - DHCP Discover를 수신한 DHCP 서버는 클라이언트에 할당할 IP 주소와 서브넷, 게이트웨이, DNS 정보, 임대 시간 등의 정보를 포함한 DHCP 메시지를 DHCP 릴레이 에이전트로 재전송
+4. DHCP Offer(릴레이 에이전트 → 클라이언트)
+    - DHCP 릴레이 에이전트는 DHCP Offer 메시지를 DHCP 클라이언트에 브로드캐스트로 재전송 → DHCP 메시지 내의 다른 값은 모두 동일하게 전송, DHCP Server Identifier는 실제 DHCP 서버의 IP 주소에서 릴레이 에이전트의 외부 인터페이스 IP로 변경되어 전송
+5. DHCP Request(클라이언트 → 릴레이 에이전트)
+    - DHCP 클라이언트는 DHCP 서버로부터 제안받은 IP 주소와 DHCP 서버 정보를 포함한 DHCP 요청 메시지를 브로드캐스트로 전송
+6. DHCP Request(릴레이 에이전트 → DHCP 서버)
+    - DHCP 클라이언트에서 보낸 DHCP 요청 메시지를 유니캐스트로 다시 변환해 DHCP 서버로 전달
+7. DHCP ACK(DHCP 서버 → 릴레이 에이전트)
+    - DHCP 요청을 받은 DHCP 서버는 해당 IP를 어떤 클라이언트가 언제부터 사용하기 시작했는지 정보 기록, DHCP Request 메시지를 정상적으로 수신했다는 응답 전송 → 유니캐스트 형태
+8. DHCP ACK(릴레이 에이전트 → 클라이언트)
+    - DHCP 서버에서 받은 Ack 메시지를 클라이언트에 브로드캐스트로 재전달
